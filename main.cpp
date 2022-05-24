@@ -13,19 +13,25 @@ using namespace std;
 void displayWebcam()
 {
     VideoCapture cap(0);
+    
+
+    Mat frame = imread("../test.png");
     int width = cap.get(CAP_PROP_FRAME_WIDTH);
     int height = cap.get(CAP_PROP_FRAME_HEIGHT);
     std::cout << width << "X" << height << "\n";
-    Mat frame;
-    namedWindow("test");
-    //namedWindow("gaussian");
+    // Mat frame = imread("../test.png");
+    // int width = frame.cols;
+    // int height = frame.rows;
+    // test_filter(frame, height, width);
 
+    //namedWindow("gaussian");
+    namedWindow("test");
     int i = 0;
     while (i == 0)
     {
         cap >> frame;
         //cvtColor(frame, frame, COLOR_RGB2GRAY);
-        borderlands_filter(frame, height, width);
+        test_filter(frame, height, width);
         imshow("test", frame);
         //step2(frame, height, width);
         //imshow("gaussian", frame);
