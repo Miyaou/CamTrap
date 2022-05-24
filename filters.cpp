@@ -3,15 +3,36 @@
 using namespace cv;
 using namespace std;
 
+std::pair<uchar, uchar> extremums(Mat frame)
+{
+    uchar min = 255;
+    uchar max = 0;
+    uchar cur;
+
+    for (int i = 0; i < frame.cols; i++)
+        for (int j = 0; j < frame.rows; j++)
+        {
+            cur = frame.ptr<uchar>(j)[i];
+            if (cur < min)
+                min = cur;
+            if (cur > max)
+                max = cur;
+        }
+    return std::pair<uchar, uchar>(min, max);
+}
+
 void test_filter(Mat &frame, int height, int width)
 {
     Mat gray;
     bgr2grayscale(frame, gray, height, width);
+    std::pair<uchar, uchar> minmax = extremums(frame);
+    uchar range = (minmax.second - minmax.first);
     width /= 2;
     height /= 2;
     gaussian(gray, height, width);
-
-    canny(gray, 100, 80, 3);
+    double th1 = .60;
+    double th2 = .30;
+    canny(gray, range * th1 + minmax.first , range * th2 + minmax.first, 3);
     //Canny(gray, gray, 0, 30);
 
     int spread = 3;

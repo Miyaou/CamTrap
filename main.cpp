@@ -12,12 +12,13 @@ using namespace std;
 // Read Video
 void displayWebcam()
 {
-    VideoCapture cap(0);
+    VideoCapture cap(2);
     
 
-    Mat frame = imread("../test.png");
+    Mat frame;
     int width = cap.get(CAP_PROP_FRAME_WIDTH);
     int height = cap.get(CAP_PROP_FRAME_HEIGHT);
+
     std::cout << width << "X" << height << "\n";
     // Mat frame = imread("../tiger.jpg");
     // int width = frame.cols;
