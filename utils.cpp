@@ -4,14 +4,14 @@ using namespace cv;
 
 void bgr2grayscale(Mat &frame, Mat &result, int height, int width)
 {
-    Mat res = Mat(Size(width, height), CV_8UC1);
-    for (int i = 0; i < width; i++)
+    Mat res = Mat(Size(width/2, height/2), CV_8UC1);
+    for (int i = 0; i < width; i += 2)
     {
-        for (int j = 0; j < height; j++)
+        for (int j = 0; j < height; j += 2)
         {
             // 0.299 ∙ Red + 0.587 ∙ Green + 0.114 ∙ Blue
             auto cur = frame.ptr<BGR>(j)[i];
-            res.ptr<uchar>(j)[i] = cur.red * 0.299 + cur.green * 0.587 + 0.114 * cur.blue;
+            res.ptr<uchar>(j/2)[i/2] = cur.red * 0.299 + cur.green * 0.587 + 0.114 * cur.blue;
         }
     }
     result = res;
@@ -150,7 +150,7 @@ void compute_edges(Mat &frame, int ih, int iw)
 }
 static uchar approx_angle(double angle)
 {
-    if ((angle >= -22.5 && angle >= 22.5) || (angle <= -157.5) || (angle >= 157.5))
+    if ((angle >= -22.5 && angle <= 22.5) || (angle <= -157.5) || (angle >= 157.5))
         return 0; // "-"
     else if ((angle > 22.5 && angle <= 67.5) || (angle > -157.5 && angle <= -112.5))
         return 45; // "/"
@@ -180,69 +180,69 @@ void canny(cv::Mat &frame, double h1, double h2, int aperture)
         for (int j = 0; j < ih; j++)
         {
             gx = Gx.ptr<uchar>(j)[i];
-            gy = Gx.ptr<uchar>(j)[i];
+            gy = Gy.ptr<uchar>(j)[i];
             g = abs(gx) + abs(gy); // Rather than std::sqrt(gx * gx + gy * gy) to optimise
             // g = sqrt(gx * gx + gy * gy);
             G.ptr<uchar>(j)[i] = uchar(g);
-            Gdir.ptr<uchar>(j)[i] = approx_angle(atan2(gx, gy) * 180 / M_PI);
+            Gdir.ptr<uchar>(j)[i] = approx_angle(atan(gy/gx) * 180 / M_PI);
             // std::cout << atan2(gx, gy) << "\n";
         }
     }
 
     // Non maximum suppression
-    Mat result = G.clone();
     for (int i = offset; i < iw - offset; ++i)
     {
         for (int j = offset; j < ih - offset; ++j)
         {
             switch (Gdir.ptr<uchar>(j)[i])
             {
-            case 0:
-                if (G.ptr<uchar>(j)[i] < G.ptr<uchar>(j)[i - 1] || G.ptr<uchar>(j)[i] < G.ptr<uchar>(j)[i + 1])
-                    result.ptr<uchar>(j)[i] = 0;
+            case 0: // "-"
+                if (G.ptr<uchar>(j)[i] <= G.ptr<uchar>(j)[i - 1] || G.ptr<uchar>(j)[i] <= G.ptr<uchar>(j)[i + 1])
+                    G.ptr<uchar>(j)[i] = 0;
                 break;
             case 45:
-                if (G.ptr<uchar>(j)[i] < G.ptr<uchar>(j - 1)[i - 1] || G.ptr<uchar>(j)[i] < G.ptr<uchar>(j + 1)[i + 1])
-                    result.ptr<uchar>(j)[i] = 0;
+                if (G.ptr<uchar>(j)[i] <= G.ptr<uchar>(j - 1)[i + 1] || G.ptr<uchar>(j)[i] <= G.ptr<uchar>(j + 1)[i - 1])
+                    G.ptr<uchar>(j)[i] = 0;
                 break;
 
             case 90:
-                if (G.ptr<uchar>(j)[i] < G.ptr<uchar>(j - 1)[i] || G.ptr<uchar>(j)[i] < G.ptr<uchar>(j + 1)[i])
-                    result.ptr<uchar>(j)[i] = 0;
+                if (G.ptr<uchar>(j)[i] <= G.ptr<uchar>(j - 1)[i] || G.ptr<uchar>(j)[i] <= G.ptr<uchar>(j + 1)[i])
+                    G.ptr<uchar>(j)[i] = 0;
                 break;
 
             case 135:
-                if (G.ptr<uchar>(j)[i] < G.ptr<uchar>(j - 1)[i + 1] || G.ptr<uchar>(j)[i] < G.ptr<uchar>(j + 1)[i - 1])
-                    result.ptr<uchar>(j)[i] = 0;
+                if (G.ptr<uchar>(j)[i] <= G.ptr<uchar>(j - 1)[i - 1] || G.ptr<uchar>(j)[i] <= G.ptr<uchar>(j + 1)[i + 1])
+                    G.ptr<uchar>(j)[i] = 0;
                 break;
             default:
-                result.ptr<uchar>(j)[i] = 0;
+                G.ptr<uchar>(j)[i] = 0;
+                break;
             }
         }
     }
 
-    // Double Threshold
-    for (int i = 0; i < iw; i++)
-    {
-        for (int j = 0; j < ih; j++)
-        {
-            if (result.ptr<uchar>(j)[i] > h1)
-                frame.ptr<uchar>(j)[i] = 255;
-            else if (result.ptr<uchar>(j)[i] > h2)
-                frame.ptr<uchar>(j)[i] = 100;
-            else
-                frame.ptr<uchar>(j)[i] = 0;
-        }
-    }
+    // // Double Threshold
+    // for (int i = 0; i < iw; i++)
+    // {
+    //     for (int j = 0; j < ih; j++)
+    //     {
+    //         if (G.ptr<uchar>(j)[i] > h1)
+    //             frame.ptr<uchar>(j)[i] = 255;
+    //         else if (G.ptr<uchar>(j)[i] > h2)
+    //             frame.ptr<uchar>(j)[i] = 100;
+    //         else
+    //             frame.ptr<uchar>(j)[i] = 0;
+    //     }
+    // }
 
-    result = Mat(Size(frame.cols, frame.rows), CV_8UC1);
+    Mat result = Mat(Size(frame.cols, frame.rows), CV_8UC1);
     for (int i = offset; i < iw - offset; ++i)
     {
         for (int j = offset; j < ih - offset; ++j)
         {
-            if (frame.ptr<uchar>(j)[i] == 255)
+            if (frame.ptr<uchar>(j)[i] <= h1)
                 result.ptr<uchar>(j)[i] = 255;
-            if (frame.ptr<uchar>(j)[i] == 100)
+            else if (frame.ptr<uchar>(j)[i] <= h2)
             {
                 switch (Gdir.ptr<uchar>(j)[i])
                 {
@@ -267,8 +267,44 @@ void canny(cv::Mat &frame, double h1, double h2, int aperture)
                     break;
                 }
             }
+            else    
+                result.ptr<uchar>(j)[i] = 0;
         }
     }
+    for (int k = 0; k < 2; k++)
+        for (int i = offset; i < iw - offset; ++i)
+        {
+            for (int j = offset; j < ih - offset; ++j)
+            {
+                if (result.ptr<uchar>(j)[i] == 255)
+                    result.ptr<uchar>(j)[i] = 255;
+                if (result.ptr<uchar>(j)[i] == 100)
+                {
+                    switch (Gdir.ptr<uchar>(j)[i])
+                    {
+                    case 0:
+                        if (result.ptr<uchar>(j)[i - 1] == 255 || result.ptr<uchar>(j)[i + 1] == 255)
+                            result.ptr<uchar>(j)[i] = 255;
+                        break;
+                    case 45:
+                        if (result.ptr<uchar>(j + 1)[i - 1] == 255 || result.ptr<uchar>(j - 1)[i + 1] == 255)
+                            result.ptr<uchar>(j)[i] = 255;
+                        break;
+                    case 90:
+                        if (result.ptr<uchar>(j - 1)[i] == 255 || result.ptr<uchar>(j + 1)[i] == 255)
+                            result.ptr<uchar>(j)[i] = 255;
+                        break;
+                    case 135:
+                        if (result.ptr<uchar>(j - 1)[i - 1] == 255 || result.ptr<uchar>(j + 1)[i + 1] == 255)
+                            result.ptr<uchar>(j)[i] = 255;
+                        break;
+                    default:
+                        result.ptr<uchar>(j)[i] = 0;
+                        break;
+                    }
+                }
+            }
+        }
 
     frame = result;
 }

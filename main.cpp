@@ -19,7 +19,7 @@ void displayWebcam()
     int width = cap.get(CAP_PROP_FRAME_WIDTH);
     int height = cap.get(CAP_PROP_FRAME_HEIGHT);
     std::cout << width << "X" << height << "\n";
-    // Mat frame = imread("../test.png");
+    // Mat frame = imread("../tiger.jpg");
     // int width = frame.cols;
     // int height = frame.rows;
     // test_filter(frame, height, width);
@@ -30,7 +30,6 @@ void displayWebcam()
     while (i == 0)
     {
         cap >> frame;
-        //cvtColor(frame, frame, COLOR_RGB2GRAY);
         test_filter(frame, height, width);
         imshow("test", frame);
         //step2(frame, height, width);

@@ -8,20 +8,18 @@ void test_filter(Mat &frame, int height, int width)
 {
     Mat gray;
     bgr2grayscale(frame, gray, height, width);
+    width /= 2;
+    height /= 2;
     gaussian(gray, height, width);
-    //GaussianBlur(frame, frame, Size(5, 5), 1.4);
-    canny(gray, 120, 60, 3);
-    // cv::Sobel(frame, Gx, CV_8UC1, 1, 0, 5);
-    // cv::Sobel(frame, Gy, CV_8UC1, 0, 1, 5);
-    //cv::Sobel(frame, frame, CV_64FC1, 1, 1, 5);
 
-    //mayCanny(G, Gx, Gy, height, width, 0, 30, 3);
- 
-    int spread = 2;
-    for (int i = spread; i < width - spread; ++i)
-        for (int j = spread; j < height - spread; j++)
+    canny(gray, 100, 80, 3);
+    //Canny(gray, gray, 0, 30);
+
+    int spread = 4;
+    for (int i = spread; i < (2 * width) - spread; ++i)
+        for (int j = spread; j < (2 * height) - spread; j++)
         {
-            if (gray.ptr<uchar>(j)[i])
+            if (gray.ptr<uchar>(j/2)[i/2])
             {
                 for (int oi = -spread/2; oi <= spread/2; oi++)
                 {
