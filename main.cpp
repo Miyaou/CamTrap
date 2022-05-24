@@ -26,8 +26,7 @@ void displayWebcam()
 
     //namedWindow("gaussian");
     namedWindow("test");
-    int i = 0;
-    while (i == 0)
+    while (true)
     {
         cap >> frame;
         test_filter(frame, height, width);
@@ -45,5 +44,5 @@ void displayWebcam()
 int main()
 {
     displayWebcam();
-    return 1;
+    return 0;
 }

@@ -221,28 +221,28 @@ void canny(cv::Mat &frame, double h1, double h2, int aperture)
         }
     }
 
-    // // Double Threshold
-    // for (int i = 0; i < iw; i++)
-    // {
-    //     for (int j = 0; j < ih; j++)
-    //     {
-    //         if (G.ptr<uchar>(j)[i] > h1)
-    //             frame.ptr<uchar>(j)[i] = 255;
-    //         else if (G.ptr<uchar>(j)[i] > h2)
-    //             frame.ptr<uchar>(j)[i] = 100;
-    //         else
-    //             frame.ptr<uchar>(j)[i] = 0;
-    //     }
-    // }
+    // Double Threshold
+    for (int i = 0; i < iw; i++)
+    {
+        for (int j = 0; j < ih; j++)
+        {
+            if (G.ptr<uchar>(j)[i] > h1)
+                frame.ptr<uchar>(j)[i] = 255;
+            else if (G.ptr<uchar>(j)[i] > h2)
+                frame.ptr<uchar>(j)[i] = 100;
+            else
+                frame.ptr<uchar>(j)[i] = 0;
+        }
+    }
 
     Mat result = Mat(Size(frame.cols, frame.rows), CV_8UC1);
     for (int i = offset; i < iw - offset; ++i)
     {
         for (int j = offset; j < ih - offset; ++j)
         {
-            if (frame.ptr<uchar>(j)[i] <= h1)
+            if (frame.ptr<uchar>(j)[i] == 255)
                 result.ptr<uchar>(j)[i] = 255;
-            else if (frame.ptr<uchar>(j)[i] <= h2)
+            if (frame.ptr<uchar>(j)[i] == 100)
             {
                 switch (Gdir.ptr<uchar>(j)[i])
                 {
@@ -267,8 +267,6 @@ void canny(cv::Mat &frame, double h1, double h2, int aperture)
                     break;
                 }
             }
-            else    
-                result.ptr<uchar>(j)[i] = 0;
         }
     }
     for (int k = 0; k < 2; k++)

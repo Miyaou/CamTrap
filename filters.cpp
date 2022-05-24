@@ -3,7 +3,6 @@
 using namespace cv;
 using namespace std;
 
-
 void test_filter(Mat &frame, int height, int width)
 {
     Mat gray;
@@ -15,7 +14,7 @@ void test_filter(Mat &frame, int height, int width)
     canny(gray, 100, 80, 3);
     //Canny(gray, gray, 0, 30);
 
-    int spread = 4;
+    int spread = 3;
     for (int i = spread; i < (2 * width) - spread; ++i)
         for (int j = spread; j < (2 * height) - spread; j++)
         {
