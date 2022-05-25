@@ -41,9 +41,9 @@ void test_filter(Mat &frame, int height, int width)
         {
             if (gray.ptr<uchar>(j/2)[i/2])
             {
-                for (int oi = -spread/2; oi <= spread/2; oi++)
+                for (int oi = -spread; oi <= 0; oi++)
                 {
-                    for (int oj = -spread/2; oj <= spread/2; oj++)
+                    for (int oj = -spread; oj <= 0; oj++)
                     {
                         frame.ptr<uchar>(j + oj)[3 * (i + oi)] = 0;
                         frame.ptr<uchar>(j + oj)[3 * (i + oi) + 1] = 0;
