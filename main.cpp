@@ -12,7 +12,7 @@ using namespace std;
 // Read Video
 void displayWebcam()
 {
-    VideoCapture cap(2);
+    VideoCapture cap(0);
     
 
     Mat frame;
